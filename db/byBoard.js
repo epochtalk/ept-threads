@@ -53,7 +53,7 @@ var getNormalThreads = function(boardId, userId, opts) {
     var query = 'SELECT ' + opts.columns + ' FROM ( ' +
       'SELECT id ' +
       'FROM threads ' +
-      'WHERE board_id = $1 AND sticky = False ' +
+      'WHERE board_id = $1 AND sticky = False AND updated_at IS NOT NULL ' +
       'ORDER BY updated_at ' + opts.reversed + ' ' +
       'LIMIT $3 OFFSET $4 ' +
     ') tlist ' +
@@ -79,7 +79,7 @@ var getStickyThreads = function(boardId, userId, opts) {
   var query = 'SELECT ' + opts.columns + ' FROM ( ' +
     'SELECT id ' +
     'FROM threads ' +
-    'WHERE board_id = $1 AND sticky = True ' +
+    'WHERE board_id = $1 AND sticky = True AND updated_at IS NOT NULL ' +
     'ORDER BY updated_at DESC ' +
   ') tlist ' +
   'LEFT JOIN LATERAL ( ' + opts.q2 + ' ) t ON true ' +
