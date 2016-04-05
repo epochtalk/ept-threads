@@ -15,6 +15,5 @@ module.exports = {
   getThreadsBoardInBoardMapping: require(path.normalize(__dirname + '/getThreadsBoardInBoardMapping')),
   getThreadOwner: require(path.normalize(__dirname + '/getThreadOwner')),
   purge: require(path.normalize(__dirname + '/purge')),
-  watching: require(path.normalize(__dirname + '/watching')),
   breadcrumb: require(path.normalize(__dirname + '/breadcrumb'))
 };

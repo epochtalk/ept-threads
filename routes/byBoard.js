@@ -20,6 +20,7 @@ module.exports = {
   method: 'GET',
   path: '/api/threads',
   config: {
+    app: { hook: 'threads.byBoard' },
     auth: { mode: 'try', strategy: 'jwt' },
     validate: {
       query: {
@@ -28,37 +29,45 @@ module.exports = {
         limit: Joi.number().integer().min(1).max(100).default(25)
       }
     },
-    pre: [ { method: 'auth.threads.byBoard(server, auth, query.board_id)' } ]
-  },
-  handler: function(request, reply) {
-    var userId;
-    if (request.auth.isAuthenticated) { userId = request.auth.credentials.id; }
-    var boardId = request.query.board_id;
-    var opts = {
-      limit: request.query.limit,
-      page: request.query.page
-    };
-
-    var getThreads = request.db.threads.byBoard(boardId, userId, opts);
-    var getBoard = request.db.boards.find(boardId);
-    var getBoardWatching = request.db.boards.watching(boardId, userId);
-    var getUserBoardBan = request.db.bans.isNotBannedFromBoard(userId, { boardId: boardId })
-    .then((notBanned) => { return !notBanned || undefined; });
-
-    var promise = Promise.join(getThreads, getBoard, getBoardWatching, getUserBoardBan, function(threads, board, boardWatching, bannedFromBoard) {
-      // check if board is being Watched
-      if (boardWatching) { board.watched = true; }
-
-      return {
-        board: board,
-        bannedFromBoard: bannedFromBoard,
-        page: request.query.page,
-        limit: request.query.limit, // limit can be modified by query
-        normal: threads.normal,
-        sticky: threads.sticky
-      };
-    });
-
-    return reply(promise);
+    pre: [
+      { method: 'auth.threads.byBoard(server, auth, query.board_id)' },
+      [
+        { method: 'hooks.preProcessing', assign: 'preprocessed' },
+        { method: processing, assign: 'processed' },
+      ],
+      { method: 'hooks.merge' },
+      { method: 'hooks.postProcessing', assign: 'postprocessed' }
+    ],
+    handler: function(request, reply) {
+      return reply(request.pre.processed);
+    }
   }
 };
+
+function processing(request, reply) {
+  var userId;
+  if (request.auth.isAuthenticated) { userId = request.auth.credentials.id; }
+  var boardId = request.query.board_id;
+  var opts = {
+    limit: request.query.limit,
+    page: request.query.page
+  };
+
+  var getThreads = request.db.threads.byBoard(boardId, userId, opts);
+  var getBoard = request.db.boards.find(boardId);
+  var boardBans = request.db.bans.isNotBannedFromBoard(userId, { boardId: boardId })
+  .then((notBanned) => { return !notBanned || undefined; });
+
+  var promise = Promise.join(getThreads, getBoard, boardBans, function(threads, board, banned) {
+    return {
+      board: board,
+      bannedFromBoard: banned,
+      page: request.query.page,
+      limit: request.query.limit, // limit can be modified by query
+      normal: threads.normal,
+      sticky: threads.sticky
+    };
+  });
+
+  return reply(promise);
+}
