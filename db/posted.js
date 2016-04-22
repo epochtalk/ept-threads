@@ -52,7 +52,7 @@ module.exports = function(opts) {
   return db.sqlQuery(query, params)
   .then(function(threads) {
     return Promise.map(threads, function(thread) {
-      return common.formatThread(thread); });
+      return common.formatThread(thread, userId); });
   })
   .then(helper.slugify);
 };

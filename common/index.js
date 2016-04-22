@@ -37,11 +37,12 @@ var formatThread = function(thread, userId) {
 
   // handle last post formatting
   if (thread.last_post_deleted || thread.last_post_user_deleted) {
-    thread.last_post_username = 'deleted';
+    thread.last_deleted = true;
+    delete thread.last_post_username;
   }
-  delete thread.last_post_user_id;
   delete thread.last_post_deleted;
   delete thread.last_post_user_deleted;
+  delete thread.last_post_user_id;
   return thread;
 };
 
