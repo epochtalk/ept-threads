@@ -40,7 +40,7 @@ module.exports = function threadsCreatePoll(server, auth, threadId, poll) {
       type: 'hasPermission',
       server: server,
       auth: auth,
-      permission: 'polls.createPoll.bypass.owner.admin'
+      permission: 'threads.createPoll.bypass.owner.admin'
     },
     {
       // is board moderator
@@ -48,7 +48,7 @@ module.exports = function threadsCreatePoll(server, auth, threadId, poll) {
       type: 'isMod',
       method: server.db.moderators.isModeratorWithThreadId,
       args: [userId, threadId],
-      permission: server.plugins.acls.getACLValue(auth, 'polls.createPoll.bypass.owner.mod')
+      permission: server.plugins.acls.getACLValue(auth, 'threads.createPoll.bypass.owner.mod')
     },
     new Promise(function(resolve) {
       var getPollExists = server.db.polls.exists(threadId);

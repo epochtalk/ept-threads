@@ -49,7 +49,7 @@ module.exports = function threadsEditPoll(server, auth, params, payload) {
       type: 'hasPermission',
       server: server,
       auth: auth,
-      permission: 'polls.editPoll.bypass.owner.admin'
+      permission: 'threads.editPoll.bypass.owner.admin'
     },
     {
       // is thread owner
@@ -63,7 +63,7 @@ module.exports = function threadsEditPoll(server, auth, params, payload) {
       type: 'isMod',
       method: server.db.moderators.isModeratorWithThreadId,
       args: [userId, threadId],
-      permission: server.plugins.acls.getACLValue(auth, 'polls.editPoll.bypass.owner.mod')
+      permission: server.plugins.acls.getACLValue(auth, 'threads.editPoll.bypass.owner.mod')
     }
   ];
   var owner = server.authorization.stitch(Boom.forbidden(), ownerCond, 'any');

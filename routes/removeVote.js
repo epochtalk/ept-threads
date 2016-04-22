@@ -1,4 +1,5 @@
 var Joi = require('joi');
+var Promise = require('bluebird');
 
 /**
   * @apiVersion 0.4.0

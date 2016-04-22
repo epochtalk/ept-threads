@@ -46,7 +46,7 @@ module.exports = function threadsLockPoll(server, auth, threadId) {
       type: 'hasPermission',
       server: server,
       auth: auth,
-      permission: 'polls.lockPoll.bypass.owner.admin'
+      permission: 'threads.lockPoll.bypass.owner.admin'
     },
     {
       // is thread owner
@@ -60,7 +60,7 @@ module.exports = function threadsLockPoll(server, auth, threadId) {
       type: 'isMod',
       method: server.db.moderators.isModeratorWithThreadId,
       args: [userId, threadId],
-      permission: server.plugins.acls.getACLValue(auth, 'polls.lockPoll.bypass.owner.mod')
+      permission: server.plugins.acls.getACLValue(auth, 'threads.lockPoll.bypass.owner.mod')
     }
   ];
   var owner = server.authorization.stitch(Boom.forbidden(), ownerCond, 'any');
