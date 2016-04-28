@@ -1,7 +1,7 @@
 var Boom = require('boom');
 var Promise = require('bluebird');
 
-module.exports = function threadsRemoveVote(server, auth, threadId, pollId) {
+module.exports = function (server, auth, threadId, pollId) {
   var userId = auth.credentials.id;
 
   // check base permission
@@ -13,8 +13,8 @@ module.exports = function threadsRemoveVote(server, auth, threadId, pollId) {
     permission: 'threads.removeVote.allow'
   });
 
-  // access board
-  var access = server.authorization.build({
+  // read board
+  var read = server.authorization.build({
     error: Boom.notFound('Board Not Found'),
     type: 'dbValue',
     method: server.db.threads.getThreadsBoardInBoardMapping,
@@ -60,5 +60,5 @@ module.exports = function threadsRemoveVote(server, auth, threadId, pollId) {
     else { return Promise.reject(Boom.badRequest('Votes cannot be changed')); }
   });
 
-  return Promise.all([allowed, access, notBannedFromBoard, active, exists, unlocked, running, change]);
+  return Promise.all([allowed, read, notBannedFromBoard, active, exists, unlocked, running, change]);
 };

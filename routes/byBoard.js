@@ -47,21 +47,24 @@ module.exports = {
 function processing(request, reply) {
   var userId;
   if (request.auth.isAuthenticated) { userId = request.auth.credentials.id; }
+  var userPriority = request.server.plugins.acls.getUserPriority(request.auth);
   var boardId = request.query.board_id;
   var opts = {
     limit: request.query.limit,
     page: request.query.page
   };
 
+  var getWriteAccess = request.db.boards.getBoardWriteAccess(boardId, userPriority);
   var getThreads = request.db.threads.byBoard(boardId, userId, opts);
-  var getBoard = request.db.boards.find(boardId);
+  var getBoard = request.db.boards.find(boardId, userPriority);
   var boardBans = request.db.bans.isNotBannedFromBoard(userId, { boardId: boardId })
   .then((notBanned) => { return !notBanned || undefined; });
 
-  var promise = Promise.join(getThreads, getBoard, boardBans, function(threads, board, banned) {
+  var promise = Promise.join(getWriteAccess, getThreads, getBoard, boardBans, function(writeAccess, threads, board, banned) {
     return {
       board: board,
       bannedFromBoard: banned,
+      writeAccess: writeAccess,
       page: request.query.page,
       limit: request.query.limit, // limit can be modified by query
       normal: threads.normal,

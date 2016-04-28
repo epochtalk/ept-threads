@@ -1,7 +1,7 @@
 var Boom = require('boom');
 var Promise = require('bluebird');
 
-module.exports = function threadsLock(server, auth, threadId) {
+module.exports = function (server, auth, threadId) {
   var userId = auth.credentials.id;
 
   // check base permission
@@ -13,11 +13,19 @@ module.exports = function threadsLock(server, auth, threadId) {
     permission: 'threads.lock.allow'
   });
 
-  // access board
-  var access = server.authorization.build({
+  // read board
+  var read = server.authorization.build({
     error: Boom.notFound('Board Not Found'),
     type: 'dbValue',
     method: server.db.threads.getThreadsBoardInBoardMapping,
+    args: [threadId, server.plugins.acls.getUserPriority(auth)]
+  });
+
+  // write board
+  var write = server.authorization.build({
+    error: Boom.forbidden('No Write Access'),
+    type: 'dbValue',
+    method: server.db.threads.getBoardWriteAccess,
     args: [threadId, server.plugins.acls.getUserPriority(auth)]
   });
 
@@ -58,5 +66,5 @@ module.exports = function threadsLock(server, auth, threadId) {
   ];
   var owner = server.authorization.stitch(Boom.forbidden(), ownerCond, 'any');
 
-  return Promise.all([allowed, access, notBannedFromBoard, active, owner]);
+  return Promise.all([allowed, read, write, notBannedFromBoard, active, owner]);
 };

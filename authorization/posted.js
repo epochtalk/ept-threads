@@ -1,7 +1,7 @@
 var Boom = require('boom');
 var Promise = require('bluebird');
 
-module.exports = function threadsPosted(server, auth) {
+module.exports = function (server, auth) {
   // check base permission
   var allowed = server.authorization.build({
     error: Boom.forbidden(),

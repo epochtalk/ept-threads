@@ -1,7 +1,7 @@
 var Boom = require('boom');
 var Promise = require('bluebird');
 
-module.exports = function threadsCreate(server, auth, payload) {
+module.exports = function (server, auth, payload) {
   var poll = payload.poll;
   var boardId = payload.board_id;
   var userId = auth.credentials.id;
@@ -15,11 +15,19 @@ module.exports = function threadsCreate(server, auth, payload) {
     permission: 'threads.create.allow'
   });
 
-  // access board
-  var access = server.authorization.build({
+  // read board
+  var read = server.authorization.build({
     error: Boom.notFound('Board Not Found'),
     type: 'dbValue',
     method: server.db.boards.getBoardInBoardMapping,
+    args: [boardId, server.plugins.acls.getUserPriority(auth)]
+  });
+
+  // write board
+  var write = server.authorization.build({
+    error: Boom.forbidden('No Write Access'),
+    type: 'dbValue',
+    method: server.db.boards.getBoardWriteAccess,
     args: [boardId, server.plugins.acls.getUserPriority(auth)]
   });
 
@@ -71,5 +79,5 @@ module.exports = function threadsCreate(server, auth, payload) {
     else { return reject(Boom.forbidden()); }
   });
 
-  return Promise.all([allowed, access, notBannedFromBoard, active, pollData, moderated]);
+  return Promise.all([allowed, read, write, notBannedFromBoard, active, pollData, moderated]);
 };

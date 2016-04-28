@@ -1,7 +1,7 @@
 var Boom = require('boom');
 var Promise = require('bluebird');
 
-module.exports = function threadsViewed(server, auth, threadId) {
+module.exports = function (server, auth, threadId) {
   // check base permission
   var allowed = server.authorization.build({
     error: Boom.forbidden(),
@@ -11,13 +11,13 @@ module.exports = function threadsViewed(server, auth, threadId) {
     permission: 'threads.viewed.allow'
   });
 
-  // access board
-  var access = server.authorization.build({
+  // read board
+  var read = server.authorization.build({
     error: Boom.notFound('Board Not Found'),
     type: 'dbValue',
     method: server.db.threads.getThreadsBoardInBoardMapping,
     args: [threadId, server.plugins.acls.getUserPriority(auth)]
   });
 
-  return Promise.all([allowed, access]);
+  return Promise.all([allowed, read]);
 };

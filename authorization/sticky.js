@@ -1,7 +1,7 @@
 var Boom = require('boom');
 var Promise = require('bluebird');
 
-module.exports = function threadsSticky(server, auth, threadId) {
+module.exports = function (server, auth, threadId) {
   var userId = auth.credentials.id;
 
   // check base permission
@@ -11,6 +11,30 @@ module.exports = function threadsSticky(server, auth, threadId) {
     server: server,
     auth: auth,
     permission: 'threads.sticky.allow'
+  });
+
+  // read board
+  var read = server.authorization.build({
+    error: Boom.notFound('Board Not Found'),
+    type: 'dbValue',
+    method: server.db.threads.getThreadsBoardInBoardMapping,
+    args: [threadId, server.plugins.acls.getUserPriority(auth)]
+  });
+
+  // write board
+  var write = server.authorization.build({
+    error: Boom.forbidden('No Write Access'),
+    type: 'dbValue',
+    method: server.db.threads.getBoardWriteAccess,
+    args: [threadId, server.plugins.acls.getUserPriority(auth)]
+  });
+
+  // is requester active
+  var active = server.authorization.build({
+    error: Boom.forbidden('Account Not Active'),
+    type: 'isActive',
+    server: server,
+    userId: userId
   });
 
   var conditions = [
@@ -31,9 +55,9 @@ module.exports = function threadsSticky(server, auth, threadId) {
     }
   ];
 
-  var access = server.authorization.stitch(Boom.badRequest(), conditions, 'any');
+  var owner = server.authorization.stitch(Boom.badRequest(), conditions, 'any');
 
   var notBannedFromBoard = server.authorization.common.isNotBannedFromBoard(Boom.forbidden('You are banned from this board'), server, userId, { threadId: threadId });
 
-  return Promise.all([allowed, access, notBannedFromBoard]);
+  return Promise.all([allowed, read, write, active, owner, notBannedFromBoard]);
 };

@@ -1,7 +1,7 @@
 var Boom = require('boom');
 var Promise = require('bluebird');
 
-module.exports = function threadsEditPoll(server, auth, params, payload) {
+module.exports = function (server, auth, params, payload) {
   var poll = payload;
   var pollId = params.pollId;
   var threadId = params.threadId;
@@ -16,11 +16,19 @@ module.exports = function threadsEditPoll(server, auth, params, payload) {
     permission: 'threads.editPoll.allow'
   });
 
-  // access board
-  var access = server.authorization.build({
+  // read board
+  var read = server.authorization.build({
     error: Boom.notFound('Board Not Found'),
     type: 'dbValue',
     method: server.db.threads.getThreadsBoardInBoardMapping,
+    args: [threadId, server.plugins.acls.getUserPriority(auth)]
+  });
+
+  // write board
+  var write = server.authorization.build({
+    error: Boom.forbidden('No Write Access'),
+    type: 'dbValue',
+    method: server.db.threads.getBoardWriteAccess,
     args: [threadId, server.plugins.acls.getUserPriority(auth)]
   });
 
@@ -85,5 +93,5 @@ module.exports = function threadsEditPoll(server, auth, params, payload) {
     if (maxAnswers > answersLength) { payload.max_answers = answersLength; }
   });
 
-  return Promise.all([allowed, access, notBannedFromBoard, active, exists, owner, display, answers]);
+  return Promise.all([allowed, read, write, notBannedFromBoard, active, exists, owner, display, answers]);
 };

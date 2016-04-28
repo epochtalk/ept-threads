@@ -1,7 +1,7 @@
 var Boom = require('boom');
 var Promise = require('bluebird');
 
-module.exports = function threadsVote(server, auth, params, payload) {
+module.exports = function (server, auth, params, payload) {
   var threadId = params.threadId;
   var pollId = params.pollId;
   var answerLength = payload.answerIds.length;
@@ -16,8 +16,8 @@ module.exports = function threadsVote(server, auth, params, payload) {
     permission: 'threads.vote.allow'
   });
 
-  // access board
-  var access = server.authorization.build({
+  // read board
+  var read = server.authorization.build({
     error: Boom.notFound('Board Not Found'),
     type: 'dbValue',
     method: server.db.threads.getThreadsBoardInBoardMapping,
@@ -70,5 +70,5 @@ module.exports = function threadsVote(server, auth, params, payload) {
     else { return Promise.reject(Boom.badRequest('Too Many Answers')); }
   });
 
-  return Promise.all([allowed, access, notBannedFromBoard, active, exists, vote, unlocked, running, valid]);
+  return Promise.all([allowed, read, notBannedFromBoard, active, exists, vote, unlocked, running, valid]);
 };

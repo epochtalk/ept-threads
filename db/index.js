@@ -13,6 +13,7 @@ module.exports = {
   move: require(path.normalize(__dirname + '/move')),
   getThreadFirstPost: require(path.normalize(__dirname + '/getThreadFirstPost')),
   getThreadsBoardInBoardMapping: require(path.normalize(__dirname + '/getThreadsBoardInBoardMapping')),
+  getBoardWriteAccess: require(path.normalize(__dirname + '/getBoardWriteAccess')),
   getThreadOwner: require(path.normalize(__dirname + '/getThreadOwner')),
   purge: require(path.normalize(__dirname + '/purge')),
   breadcrumb: require(path.normalize(__dirname + '/breadcrumb'))
