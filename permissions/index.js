@@ -264,7 +264,37 @@ var moderator = {
   }
 };
 
+var patroller = {
+  create: { allow: true },
+  moderated: { allow: true },
+  byBoard: { allow: true },
+  posted: { allow: true },
+  viewed: { allow: true },
+  title: { allow: true },
+  lock: { allow: true },
+  vote: { allow: true },
+  removeVote: { allow: true },
+  createPoll: { allow: true },
+  editPoll: { allow: true },
+  lockPoll: { allow: true }
+};
+
 var user = {
+  create: { allow: true },
+  moderated: { allow: true },
+  byBoard: { allow: true },
+  posted: { allow: true },
+  viewed: { allow: true },
+  title: { allow: true },
+  lock: { allow: true },
+  vote: { allow: true },
+  removeVote: { allow: true },
+  createPoll: { allow: true },
+  editPoll: { allow: true },
+  lockPoll: { allow: true }
+};
+
+var newbie = {
   create: { allow: true },
   moderated: { allow: true },
   byBoard: { allow: true },
@@ -340,7 +370,9 @@ module.exports = {
     administrator: administrator,
     globalModerator: globalModerator,
     moderator: moderator,
+    patroller: patroller,
     user: user,
+    newbie: newbie,
     banned: banned,
     anonymous: anonymous,
     private: {}
