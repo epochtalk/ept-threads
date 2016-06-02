@@ -31,12 +31,13 @@ module.exports = {
     },
     pre: [
       { method: 'auth.threads.byBoard(server, auth, query.board_id)' },
+      { method: 'hooks.preProcessing' },
       [
-        { method: 'hooks.preProcessing', assign: 'preprocessed' },
+        { method: 'hooks.parallelProcessing', assign: 'parallelProcessed' },
         { method: processing, assign: 'processed' },
       ],
       { method: 'hooks.merge' },
-      { method: 'hooks.postProcessing', assign: 'postprocessed' }
+      { method: 'hooks.postProcessing' }
     ],
     handler: function(request, reply) {
       return reply(request.pre.processed);
