@@ -71,5 +71,5 @@ module.exports = function (server, auth, threadId) {
   .error(function() { return Promise.reject(Boom.notFound()); });
 
   return Promise.all([allowed, read, write, notBannedFromBoard, active, owner, first])
-  .then(function(data) { return data[5]; });
+  .then(function(data) { return data[6]; });
 };
