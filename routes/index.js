@@ -3,6 +3,7 @@ var path = require('path');
 module.exports = [
   require(path.normalize(__dirname + '/create')),
   require(path.normalize(__dirname + '/byBoard')),
+  require(path.normalize(__dirname + '/meta-byBoard')),
   require(path.normalize(__dirname + '/posted')),
   require(path.normalize(__dirname + '/viewed')),
   require(path.normalize(__dirname + '/title')),

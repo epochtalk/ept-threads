@@ -12,6 +12,11 @@ module.exports = [
     options: { callback: false }
   },
   {
+    name: 'auth.threads.metaByBoard',
+    method: require(path.normalize(__dirname + '/metaByBoard')),
+    options: { callback: false }
+  },
+  {
     name: 'auth.threads.posted',
     method: require(path.normalize(__dirname + '/posted')),
     options: { callback: false }
