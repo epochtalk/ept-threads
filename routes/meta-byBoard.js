@@ -1,4 +1,5 @@
 var Joi = require('joi');
+var Boom = require('boom');
 
 /**
   * @apiVersion 0.4.0
@@ -43,10 +44,12 @@ module.exports = {
 
     return request.db.boards.find(boardId, userPriority)
     .then(function(board) {
+      // Title
       if (board.name && viewable) {
         data.ogTitle = data.twTitle = config.website.title + ': ' + board.name;
       }
 
+      // Description
       if (board.description && viewable) {
         data.ogDescription = data.twDescription = board.description;
       }
@@ -55,6 +58,7 @@ module.exports = {
     })
     .then(function(data) {
       return reply.view('index', data);
-    });
+    })
+    .catch(() => { return reply(Boom.badRequest()); });
   }
 };
