@@ -39,7 +39,8 @@ module.exports = {
       logo: config.website.logo,
       favicon: config.website.favicon,
       websocket_host: config.websocket_client_host,
-      websocket_port: config.websocket_port
+      websocket_port: config.websocket_port,
+      GAKey: config.gaKey
     };
 
     return request.db.boards.find(boardId, userPriority)
