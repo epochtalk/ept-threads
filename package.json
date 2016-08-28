@@ -1,6 +1,6 @@
 {
   "name": "ept-threads",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "BitcoinTalk's Implentation for Users",
   "main": "index.js",
   "scripts": {
