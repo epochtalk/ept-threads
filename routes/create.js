@@ -20,6 +20,7 @@ module.exports = {
   method: 'POST',
   path: '/api/threads',
   config: {
+    app: { hook: 'threads.create' },
     auth: { strategy: 'jwt' },
     validate: {
       payload: Joi.object().keys({
@@ -43,40 +44,51 @@ module.exports = {
       { method: 'auth.threads.create(server, auth, payload)' },
       { method: 'common.posts.clean(sanitizer, payload)' },
       { method: 'common.posts.parse(parser, payload)' },
-      { method: 'common.images.sub(payload)' }
+      { method: 'common.images.sub(payload)' },
+      { method: 'hooks.preProcessing' },
+      [
+        { method: 'hooks.parallelProcessing', assign: 'parallelProcessing' },
+        { method: processing, assign: 'processed' }
+      ],
+      { method: 'hooks.merge' },
+      { method: 'hooks.postProcessing' }
     ]
   },
   handler: function(request, reply) {
-    // build the thread post object from payload and params
-    var user = request.auth.credentials;
-    var newThread = {
-      board_id: request.payload.board_id,
-      locked: request.payload.locked,
-      sticky: request.payload.sticky,
-      moderated: request.payload.moderated
-    };
-    var newPost = {
-      title: request.payload.title,
-      body: request.payload.body,
-      raw_body: request.payload.raw_body,
-      user_id: user.id
-    };
-
-    // create the thread
-    var promise = request.db.threads.create(newThread)
-    // save thread id to newPost
-    .tap(function(thread) { newPost.thread_id = thread.id; })
-    // create any associated polls
-    .then(function(thread) {
-      if (request.payload.poll) {
-        return request.db.polls.create(thread.id, request.payload.poll);
-      }
-    })
-    // create the first post in this thread
-    .then(function() { return request.db.posts.create(newPost); });
-    return reply(promise);
+    return reply(request.pre.processed);
   }
 };
+
+function processing(request, reply) {
+  // build the thread post object from payload and params
+  var user = request.auth.credentials;
+  var newThread = {
+    board_id: request.payload.board_id,
+    locked: request.payload.locked,
+    sticky: request.payload.sticky,
+    moderated: request.payload.moderated
+  };
+  var newPost = {
+    title: request.payload.title,
+    body: request.payload.body,
+    raw_body: request.payload.raw_body,
+    user_id: user.id
+  };
+
+  // create the thread
+  var promise = request.db.threads.create(newThread)
+  // save thread id to newPost
+  .tap(function(thread) { newPost.thread_id = thread.id; })
+  // create any associated polls
+  .then(function(thread) {
+    if (request.payload.poll) {
+      return request.db.polls.create(thread.id, request.payload.poll);
+    }
+  })
+  // create the first post in this thread
+  .then(function() { return request.db.posts.create(newPost); });
+  return reply(promise);
+}
 
 /**
   * @apiDefine ThreadObjectPayload

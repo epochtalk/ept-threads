@@ -51,7 +51,7 @@ var getNormalThreads = function(boardId, userId, opts) {
   // get all related threads
   .then(function() {
     var query = 'SELECT ' + opts.columns + ' FROM ( ' +
-      'SELECT id ' +
+      'SELECT id, updated_at ' +
       'FROM threads ' +
       'WHERE board_id = $1 AND sticky = False AND updated_at IS NOT NULL ' +
       'ORDER BY updated_at ' + opts.reversed + ' ' +
@@ -60,7 +60,8 @@ var getNormalThreads = function(boardId, userId, opts) {
     'LEFT JOIN LATERAL ( ' + opts.q2 + ' ) t ON true ' +
     'LEFT JOIN LATERAL ( ' + opts.q3 + ' ) p ON true ' +
     'LEFT JOIN LATERAL ( ' + opts.q4 + ' ) tv ON true ' +
-    'LEFT JOIN LATERAL ( ' + opts.q5 + ' ) pl ON true';
+    'LEFT JOIN LATERAL ( ' + opts.q5 + ' ) pl ON true ' +
+    'ORDER BY tlist.updated_at DESC';
     var params = [boardId, userId, opts.limit, opts.offset];
     return db.sqlQuery(query, params);
   })
@@ -77,15 +78,16 @@ var getNormalThreads = function(boardId, userId, opts) {
 var getStickyThreads = function(boardId, userId, opts) {
   if (opts.page !== 1) { return []; }
   var query = 'SELECT ' + opts.columns + ' FROM ( ' +
-    'SELECT id ' +
+    'SELECT id, created_at, updated_at ' +
     'FROM threads ' +
     'WHERE board_id = $1 AND sticky = True AND updated_at IS NOT NULL ' +
-    'ORDER BY updated_at DESC ' +
+    'ORDER BY created_at DESC ' +
   ') tlist ' +
   'LEFT JOIN LATERAL ( ' + opts.q2 + ' ) t ON true ' +
   'LEFT JOIN LATERAL ( ' + opts.q3 + ' ) p ON true ' +
   'LEFT JOIN LATERAL ( ' + opts.q4 + ' ) tv ON true ' +
-  'LEFT JOIN LATERAL ( ' + opts.q5 + ' ) pl ON true';
+  'LEFT JOIN LATERAL ( ' + opts.q5 + ' ) pl ON true ' +
+  'ORDER BY tlist.created_at';
   return db.sqlQuery(query, [boardId, userId])
   .map(function(thread) { return common.formatThread(thread, userId); });
 };
